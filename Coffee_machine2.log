@@ -1,0 +1,44 @@
+2026-04-06 16:01:35 - Coffee Machine - INFO - 启动生产系统
+2026-04-06 16:01:35 - coffee_machine - ERROR - 连接咖啡机失败: could not open port 'COM6': FileNotFoundError(2, '系统找不到指定的文件。', None, 2)
+2026-04-06 16:01:35 - Coffee Machine - ERROR - 板卡/咖啡机连接失败,板卡状态：False,咖啡机状态：False
+2026-04-06 16:07:16 - Coffee Machine - INFO - 启动生产系统
+2026-04-06 16:07:16 - coffee_machine - ERROR - 连接咖啡机失败: could not open port 'COM6': FileNotFoundError(2, '系统找不到指定的文件。', None, 2)
+2026-04-06 16:07:16 - Coffee Machine - ERROR - 板卡/咖啡机连接失败,板卡状态：False,咖啡机状态：False
+2026-04-23 15:10:59 - Coffee Machine - INFO - 启动生产系统
+2026-04-23 15:10:59 - coffee_machine - INFO - 成功连接到咖啡机，端口: COM6, 波特率: 38400
+2026-04-23 15:10:59 - Coffee Machine - INFO - DO信号复位完成，全部置为True
+2026-04-23 15:10:59 - Coffee Machine - INFO - start方法执行完毕，咖啡机/板卡连接成功，所有DO信号复位完成（置为True），已启动数据库监控线程/生产队列线程
+2026-04-23 15:15:55 - Coffee Machine - INFO - 启动生产系统
+2026-04-23 15:15:55 - coffee_machine - INFO - 成功连接到咖啡机，端口: COM6, 波特率: 38400
+2026-04-23 15:15:55 - Coffee Machine - INFO - DO信号复位完成，全部置为True
+2026-04-23 15:15:55 - Coffee Machine - INFO - start方法执行完毕，咖啡机/板卡连接成功，所有DO信号复位完成（置为True），已启动数据库监控线程/生产队列线程
+2026-04-23 15:20:40 - Coffee Machine - INFO - 启动生产系统
+2026-04-23 15:20:40 - coffee_machine - INFO - 成功连接到咖啡机，端口: COM6, 波特率: 38400
+2026-04-23 15:20:40 - Coffee Machine - INFO - DO信号复位完成，全部置为True
+2026-04-23 15:20:40 - Coffee Machine - INFO - start方法执行完毕，咖啡机/板卡连接成功，所有DO信号复位完成（置为True），已启动数据库监控线程/生产队列线程
+2026-04-23 15:20:51 - Coffee Machine - INFO - 已获得新订单，订单号为：1,该订单要做1杯咖啡
+2026-04-23 15:20:52 - Coffee Machine - INFO - 已进入queue_monitorif判断，开始创建一杯生产线程
+2026-04-23 15:20:52 - Coffee Machine - INFO - =====================一杯生产制作程序开始=============================
+2026-04-23 15:20:53 - Coffee Machine - INFO - 已触发机械臂启动信号DO1
+2026-04-23 15:21:03 - Coffee Machine - INFO - 机械臂到位信号IN11已变化，杯子到达咖啡机口
+2026-04-23 15:21:03 - coffee_machine - INFO - 发送命令: :01010002FC\r\n
+2026-04-23 15:21:03 - coffee_machine - INFO - 收到响应: :010100FE\r\n
+2026-04-23 15:21:03 - coffee_machine - INFO - 响应十六进制: 3A 30 31 30 31 30 30 46 45 5C 72 5C 6E
+2026-04-23 15:21:03 - coffee_machine - INFO - 咖啡制作指令已发送，等待咖啡机响应...
+2026-04-23 15:21:03 - Coffee Machine - INFO - 咖啡制作命令已发送
+2026-04-23 15:21:03 - Coffee Machine - INFO - 等待咖啡制作完毕并放到落杯器上
+2026-04-23 15:21:03 - Coffee Machine - INFO - 目前IN8信号电平为True,杯子未放到落杯器上
+2026-04-23 15:22:19 - Coffee Machine - INFO - 杯子已落到落杯器上，3.5秒等待下降
+2026-04-23 15:22:23 - Coffee Machine - INFO - 开始触发OUT11信号，让落杯器下降
+2026-04-23 15:22:23 - Coffee Machine - INFO - 目前IN8信号电平为False，杯子在落杯器上
+2026-04-23 15:22:29 - Coffee Machine - INFO - OUT11信号已恢复为True
+2026-04-23 15:22:41 - Coffee Machine - INFO - IN8信号已变化，初步判断用户已取走杯子
+2026-04-23 15:22:44 - Coffee Machine - INFO - 第2次判断，用户确实取走了杯子
+2026-04-23 15:22:44 - Coffee Machine - INFO - 正在升起起落架
+2026-04-23 15:22:50 - Coffee Machine - INFO - 起落架已升起，OUT12信号恢复至True
+2026-04-23 15:22:50 - Coffee Machine - INFO - 已进入线程锁，开始修改订单状态
+2026-04-23 15:22:50 - Coffee Machine - INFO - 本次订单剩余杯数为0
+2026-04-23 15:22:50 - Coffee Machine - INFO - 数据库已修改，参数回到初始化，本次订单已完成
+2026-04-29 11:36:06 - Coffee Machine - INFO - 启动生产系统
+2026-04-29 11:36:06 - coffee_machine - ERROR - 连接咖啡机失败: could not open port 'COM6': FileNotFoundError(2, '系统找不到指定的文件。', None, 2)
+2026-04-29 11:36:06 - Coffee Machine - ERROR - 板卡/咖啡机连接失败,板卡状态：False,咖啡机状态：False
