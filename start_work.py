@@ -1,3 +1,4 @@
+#测试git使用
 # power_on_devices.py - 独立设备开机程序
 import time
 import logging
