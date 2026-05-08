@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单支付 - 咖啡点单系统</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, "Microsoft YaHei", sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            color: #2c1810;
+            background: linear-gradient(135deg, #f8f4ed, #dfdbd1);
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            overflow: hidden;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            padding: 24px 20px;
+            color: #fff;
+            text-align: center;
+            background: linear-gradient(135deg, #5d4037, #3e2723);
+        }
+
+        .content {
+            padding: 26px 20px 30px;
+        }
+
+        .order-card {
+            padding: 18px;
+            margin-bottom: 22px;
+            background: #f8f4ed;
+            border: 1px solid #e8e0d6;
+            border-radius: 12px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #e8e0d6;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            color: #6b5344;
+        }
+
+        .value {
+            font-weight: 700;
+            color: #3e2723;
+        }
+
+        .amount {
+            font-size: 1.4rem;
+            color: #9b4d22;
+        }
+
+        .qr-box {
+            width: 180px;
+            height: 180px;
+            margin: 4px auto 16px;
+            padding: 14px;
+            background: #fff;
+            border: 8px solid #2c1810;
+            border-radius: 12px;
+        }
+
+        .qr-pattern {
+            width: 100%;
+            height: 100%;
+            background:
+                linear-gradient(90deg, #2c1810 12px, transparent 12px) 0 0 / 28px 28px,
+                linear-gradient(#2c1810 12px, transparent 12px) 0 0 / 28px 28px,
+                linear-gradient(45deg, transparent 48%, #2c1810 49%, #2c1810 56%, transparent 57%) 0 0 / 32px 32px,
+                #fff;
+        }
+
+        .pay-tip {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #6b5344;
+            line-height: 1.6;
+        }
+
+        .error {
+            margin-bottom: 16px;
+            padding: 12px 14px;
+            color: #9b2335;
+            text-align: center;
+            background: #fdeef0;
+            border: 1px solid rgba(155, 35, 53, 0.2);
+            border-radius: 10px;
+        }
+
+        .pay-btn {
+            width: 100%;
+            padding: 15px 18px;
+            color: #fff;
+            font-size: 1.05rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: linear-gradient(180deg, #6b4a3a 0%, #5c3d2e 100%);
+            box-shadow: 0 5px 16px rgba(92, 61, 46, 0.3);
+        }
+
+        .pay-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 16px;
+            color: #5d4037;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .status {
+            margin-top: 14px;
+            text-align: center;
+            color: #2d6a4f;
+            font-weight: 600;
+        }
+
+        .footer {
+            padding: 18px;
+            color: #777;
+            font-size: 14px;
+            text-align: center;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>订单支付</h1>
+        </div>
+
+        <div class="content">
+            {% if error %}
+            <div class="error">{{ error }}</div>
+            {% endif %}
+
+            <div class="order-card">
+                <div class="info-row">
+                    <span class="label">订单号</span>
+                    <span class="value">#{{ order.order_id }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">咖啡数量</span>
+                    <span class="value">{{ order.cups }} 杯</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">支付金额</span>
+                    <span class="value amount">¥{{ "%.2f"|format(amount_yuan) }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">支付状态</span>
+                    <span class="value" id="payment-status">{{ order.payment_status }}</span>
+                </div>
+            </div>
+
+            <div class="qr-box" aria-label="模拟支付二维码">
+                <div class="qr-pattern"></div>
+            </div>
+
+            <p class="pay-tip">
+                当前为模拟支付环境，不会产生真实扣款。<br>
+                点击下方按钮后，订单会进入咖啡制作队列。
+            </p>
+
+            <form method="POST" action="{{ url_for('confirm_payment') }}" id="pay-form">
+                <input type="hidden" name="order_id" value="{{ order.order_id }}">
+                <input type="hidden" name="payment_method" value="simulated">
+                <button type="submit" class="pay-btn" id="pay-btn">确认模拟支付</button>
+            </form>
+
+            <div class="status" id="pay-status-text"></div>
+            <a href="/" class="back-link">返回重新下单</a>
+        </div>
+
+        <div class="footer">
+            咖啡点单系统 • {{ current_time }}
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('pay-form');
+        const button = document.getElementById('pay-btn');
+        const statusText = document.getElementById('pay-status-text');
+        const paymentStatus = document.getElementById('payment-status');
+
+        form.addEventListener('submit', function () {
+            button.disabled = true;
+            button.textContent = '支付确认中...';
+            statusText.textContent = '正在提交模拟支付，请稍候';
+        });
+
+        function refreshPaymentStatus() {
+            fetch('/api/payment/status/{{ order.order_id }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        return;
+                    }
+                    paymentStatus.textContent = data.payment_status;
+                    if (data.payment_status === 'paid') {
+                        window.location.replace('/order/success?order_id={{ order.order_id }}');
+                    }
+                })
+                .catch(() => {});
+        }
+
+        setInterval(refreshPaymentStatus, 3000);
+    </script>
+</body>
+</html>

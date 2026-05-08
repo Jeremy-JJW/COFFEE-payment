@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>下单成功</title>
+    <title>支付成功</title>
     <style>
         * {
             box-sizing: border-box;
@@ -86,6 +86,39 @@
             color: #666;
             margin: 15px 0 30px;
             animation: fadeInUp 0.6s ease-out 0.4s both;
+        }
+
+        .payment-details {
+            margin: 22px 0 8px;
+            padding: 18px;
+            text-align: left;
+            background: #f8f4ed;
+            border: 1px solid #e8e0d6;
+            border-radius: 12px;
+            animation: fadeInUp 0.6s ease-out 0.45s both;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 9px 0;
+            border-bottom: 1px solid #e8e0d6;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #666;
+        }
+
+        .detail-value {
+            color: #3e2723;
+            font-weight: 700;
+            text-align: right;
+            word-break: break-all;
         }
 
         .action-buttons {
@@ -182,13 +215,38 @@
     <div class="container">
         <!-- 顶部标题部分 -->
         <div class="header">
-            <h1>下单成功</h1>
+            <h1>支付成功</h1>
         </div>
 
         <div class="content">
             <div class="success-icon">✓</div>
             <p class="order-info">您已成功下单 <span class="cups">{{ cups }}</span> 杯咖啡</p>
-            <p class="status-message">咖啡正在制作中，请稍候...</p>
+            <p class="status-message">订单已支付，咖啡正在制作中，请稍候...</p>
+
+            {% if order %}
+            <div class="payment-details">
+                <div class="detail-row">
+                    <span class="detail-label">订单号</span>
+                    <span class="detail-value">#{{ order.order_id }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">支付金额</span>
+                    <span class="detail-value">¥{{ "%.2f"|format(amount_yuan) }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">支付方式</span>
+                    <span class="detail-value">{{ order.payment_method or 'simulated' }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">交易号</span>
+                    <span class="detail-value">{{ order.payment_transaction_id }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">支付时间</span>
+                    <span class="detail-value">{{ order.payment_time }}</span>
+                </div>
+            </div>
+            {% endif %}
 
             <!-- 操作按钮 -->
             <div class="action-buttons">

@@ -543,10 +543,7 @@
                 </div>
             </div>
 
-            <div class="cup-hint">
-                提示：上述数字点击一次就下单成功<br>
-                若要一次性点更多杯请在下方输入数字并提交订单
-            </div>
+
 
             <!-- 统一的隐藏表单 -->
             <form method="POST" action="/order" id="order-form" style="display: none;">
@@ -560,8 +557,8 @@
                     <input type="number" id="cups-input" name="cups" min="1" max="10" value="1" required>
                 </div>
 
-                <button type="submit" class="submit-btn" id="custom-submit-btn">提交订单</button>
-                <div class="loading-text" id="custom-loading">提交中...</div>
+                <button type="submit" class="submit-btn" id="custom-submit-btn">提交订单并支付</button>
+                <div class="loading-text" id="custom-loading">正在创建订单...</div>
             </form>
 
 <!--            <a href="/orders" class="custom-orders-link">查看所有订单明细 →</a>-->
@@ -590,12 +587,12 @@
         function setSubmittingUi(active) {
             if (active) {
                 customSubmitBtn.disabled = true;
-                customSubmitBtn.textContent = '提交中...';
+                customSubmitBtn.textContent = '正在创建订单...';
                 customLoading.style.display = 'block';
                 cupsInput.disabled = true;
             } else {
                 customSubmitBtn.disabled = false;
-                customSubmitBtn.textContent = '提交订单';
+                customSubmitBtn.textContent = '提交订单并支付';
                 customLoading.style.display = 'none';
                 cupsInput.disabled = false;
             }
