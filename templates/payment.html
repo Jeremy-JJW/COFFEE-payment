@@ -74,23 +74,28 @@
         }
 
         .qr-box {
-            width: 180px;
-            height: 180px;
+            width: 260px;
+            min-height: 260px;
             margin: 4px auto 16px;
             padding: 14px;
             background: #fff;
             border: 8px solid #2c1810;
             border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .qr-pattern {
+        .qr-image {
             width: 100%;
-            height: 100%;
-            background:
-                linear-gradient(90deg, #2c1810 12px, transparent 12px) 0 0 / 28px 28px,
-                linear-gradient(#2c1810 12px, transparent 12px) 0 0 / 28px 28px,
-                linear-gradient(45deg, transparent 48%, #2c1810 49%, #2c1810 56%, transparent 57%) 0 0 / 32px 32px,
-                #fff;
+            height: auto;
+            display: block;
+        }
+
+        .qr-empty {
+            color: #9b2335;
+            line-height: 1.6;
+            text-align: center;
         }
 
         .pay-tip {
@@ -126,6 +131,22 @@
         .pay-btn:disabled {
             cursor: not-allowed;
             opacity: 0.7;
+        }
+
+        .dev-payment {
+            margin-top: 16px;
+            padding: 14px;
+            border: 1px dashed #c8b7a3;
+            border-radius: 10px;
+            background: #fff9ef;
+        }
+
+        .dev-payment-note {
+            margin-bottom: 10px;
+            color: #8a6b4f;
+            line-height: 1.5;
+            text-align: center;
+            font-size: 0.9rem;
         }
 
         .back-link {
@@ -182,20 +203,38 @@
                 </div>
             </div>
 
-            <div class="qr-box" aria-label="模拟支付二维码">
-                <div class="qr-pattern"></div>
+            <div class="qr-box" aria-label="微信支付二维码">
+                {% if qr_data_uri %}
+                <img class="qr-image" src="{{ qr_data_uri }}" alt="微信支付二维码">
+                {% elif qr_image %}
+                <img class="qr-image" src="{{ qr_image }}" alt="微信支付二维码">
+                {% else %}
+                <div class="qr-empty">二维码生成失败<br>请检查虎皮椒配置或联系工作人员</div>
+                {% endif %}
             </div>
 
             <p class="pay-tip">
-                当前为模拟支付环境，不会产生真实扣款。<br>
-                点击下方按钮后，订单会进入咖啡制作队列。
+                请使用微信扫码支付。<br>
+                支付成功后，订单会自动进入咖啡制作队列。
             </p>
 
+            {% if pay_url %}
+            <p class="pay-tip">
+                如果二维码无法识别，可在手机上打开支付链接：<br>
+                <a href="{{ pay_url }}" target="_blank" rel="noopener">打开微信支付链接</a>
+            </p>
+            {% endif %}
+
+            {% if simulated_payment_enabled %}
+            <div class="dev-payment">
+                <p class="dev-payment-note">开发调试模式：模拟支付已开启，正式使用请关闭 ENABLE_SIMULATED_PAYMENT。</p>
             <form method="POST" action="{{ url_for('confirm_payment') }}" id="pay-form">
                 <input type="hidden" name="order_id" value="{{ order.order_id }}">
                 <input type="hidden" name="payment_method" value="simulated">
                 <button type="submit" class="pay-btn" id="pay-btn">确认模拟支付</button>
             </form>
+            </div>
+            {% endif %}
 
             <div class="status" id="pay-status-text"></div>
             <a href="/" class="back-link">返回重新下单</a>
@@ -207,16 +246,20 @@
     </div>
 
     <script>
-        const form = document.getElementById('pay-form');
-        const button = document.getElementById('pay-btn');
         const statusText = document.getElementById('pay-status-text');
         const paymentStatus = document.getElementById('payment-status');
+        const form = document.getElementById('pay-form');
+        const button = document.getElementById('pay-btn');
 
-        form.addEventListener('submit', function () {
-            button.disabled = true;
-            button.textContent = '支付确认中...';
-            statusText.textContent = '正在提交模拟支付，请稍候';
-        });
+        if (form && button) {
+            form.addEventListener('submit', function () {
+                button.disabled = true;
+                button.textContent = '支付确认中...';
+                statusText.textContent = '正在提交模拟支付，请稍候';
+            });
+        }
+
+        statusText.textContent = {% if pay_url %}'正在等待微信支付结果...'{% else %}'二维码未生成，请检查支付配置后重新下单'{% endif %};
 
         function refreshPaymentStatus() {
             fetch('/api/payment/status/{{ order.order_id }}')

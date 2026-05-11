@@ -1,7 +1,17 @@
-from flask import Flask, request, redirect, url_for, render_template, jsonify
+from flask import Flask, Response, request, redirect, url_for, render_template, jsonify
 from threading import Lock
 import datetime
+import os
 import socket
+from hupijiao_pay import (
+    HupijiaoClient,
+    HupijiaoConfig,
+    HupijiaoError,
+    parse_trade_order_id,
+    trade_order_id,
+    verify_sign,
+    yuan_to_cents,
+)
 from order_db import order_db  # 导入订单数据库
 
 # app = Flask(__name__)
@@ -12,6 +22,31 @@ next_order_id = order_db.get_next_order_id()  # 新增：订单ID计数器
 order_lock = Lock() 
 last_order_time = None
 order_history = []
+
+
+def is_simulated_payment_enabled():
+    return os.getenv("ENABLE_SIMULATED_PAYMENT", "false").lower() in ("1", "true", "yes", "on")
+
+
+def get_payment_public_base_url():
+    configured_url = os.getenv("XUNHUPAY_PUBLIC_BASE_URL", "").strip().rstrip("/")
+    if configured_url:
+        return configured_url
+
+    forwarded_proto = request.headers.get("X-Forwarded-Proto", "").split(",")[0].strip()
+    forwarded_host = request.headers.get("X-Forwarded-Host", "").split(",")[0].strip()
+    proto = forwarded_proto or request.scheme
+    host = forwarded_host or request.host
+    return f"{proto}://{host}".rstrip("/")
+
+
+def payment_method_label(method):
+    labels = {
+        "simulated": "模拟支付",
+        "xunhupay_wechat": "微信扫码支付",
+        "wechat_pay": "微信支付",
+    }
+    return labels.get(method or "", method or "未知")
 
  
 # 获取本机IP地址和当前时间（保持不变）
@@ -39,7 +74,7 @@ def generate_payment_token():
     token = hashlib.md5(str(secrets.randbits(128)).encode()).hexdigest()[:16]
     return token
 
-def calculate_payment_amount(cups, price_per_cup=15):
+def calculate_payment_amount(cups, price_per_cup=0.01):
     """计算支付金额（元转分）"""
     yuan = cups * price_per_cup  # 元
     fen = int(yuan * 100)        # 分
@@ -164,7 +199,7 @@ def place_order():
 
 @app.route('/payment/<int:order_id>')
 def payment_page(order_id):
-    """显示模拟支付页面"""
+    """显示虎皮椒微信扫码支付页面"""
     order = order_db.get_order_by_id(order_id)
     if not order:
         return redirect(url_for('order_page', error="订单不存在，请重新下单"))
@@ -172,18 +207,41 @@ def payment_page(order_id):
     if order['payment_status'] == 'paid':
         return redirect(url_for('order_success', order_id=order_id))
 
+    pay_error = request.args.get('error', '')
+    pay_url = ''
+    qr_image = ''
+    qr_data_uri = ''
+    simulated_payment_enabled = is_simulated_payment_enabled()
+
+    try:
+        payment = HupijiaoClient(
+            public_base_url=get_payment_public_base_url()
+        ).create_payment(order)
+        pay_url = payment['pay_url']
+        qr_image = payment['qr_image']
+        qr_data_uri = payment['qr_data_uri']
+    except HupijiaoError as exc:
+        pay_error = pay_error or str(exc)
+
     return render_template(
         'payment.html',
         order=order,
         amount_yuan=order['payment_amount'] / 100,
-        error=request.args.get('error', ''),
+        error=pay_error,
+        pay_url=pay_url,
+        qr_image=qr_image,
+        qr_data_uri=qr_data_uri,
+        simulated_payment_enabled=simulated_payment_enabled,
         current_time=get_current_time()
     )
 
 
 @app.route('/payment/confirm', methods=['POST'])
 def confirm_payment():
-    """模拟支付确认"""
+    """仅开发环境使用的模拟支付确认"""
+    if not is_simulated_payment_enabled():
+        return redirect(url_for('order_page', error="模拟支付已关闭，请使用微信扫码支付"))
+
     order_id = request.form.get('order_id')
     payment_method = request.form.get('payment_method', 'simulated')
 
@@ -222,6 +280,75 @@ def wechatpay_callback():
     return jsonify(success=False, message="微信支付暂未启用"), 501
 
 
+@app.route('/payment/callback/xunhupay', methods=['POST'])
+def xunhupay_callback():
+    """虎皮椒支付成功异步回调。"""
+    data = request.form.to_dict()
+    if not data and request.is_json:
+        data = request.get_json(silent=True) or {}
+
+    try:
+        config = HupijiaoConfig.from_env(require_public_base_url=False)
+    except HupijiaoError as exc:
+        print(f"虎皮椒回调配置错误: {exc}")
+        return Response("fail", status=500, mimetype="text/plain")
+
+    if not verify_sign(data, config.appsecret):
+        print(f"虎皮椒回调验签失败: {data}")
+        return Response("fail", status=400, mimetype="text/plain")
+
+    if str(data.get("appid", "")) != str(config.appid):
+        print(f"虎皮椒回调 appid 不匹配: {data.get('appid')}")
+        return Response("fail", status=400, mimetype="text/plain")
+
+    if data.get("status") != "OD":
+        print(f"虎皮椒回调状态不是已支付: {data.get('status')}")
+        return Response("fail", status=400, mimetype="text/plain")
+
+    try:
+        order_id = parse_trade_order_id(data.get("trade_order_id"))
+    except (TypeError, ValueError):
+        print(f"虎皮椒回调订单号无效: {data.get('trade_order_id')}")
+        return Response("fail", status=400, mimetype="text/plain")
+
+    order = order_db.get_order_by_id(order_id)
+    if not order:
+        print(f"虎皮椒回调订单不存在: {order_id}")
+        return Response("fail", status=404, mimetype="text/plain")
+
+    try:
+        callback_amount = yuan_to_cents(data.get("total_fee", "0"))
+    except Exception:
+        print(f"虎皮椒回调金额无效: {data.get('total_fee')}")
+        return Response("fail", status=400, mimetype="text/plain")
+
+    if callback_amount != int(order["payment_amount"]):
+        print(
+            f"虎皮椒回调金额不匹配: order={order['payment_amount']}, "
+            f"callback={callback_amount}"
+        )
+        return Response("fail", status=400, mimetype="text/plain")
+
+    if order["payment_status"] == "paid":
+        return Response("success", mimetype="text/plain")
+
+    transaction_id = (
+        data.get("transaction_id")
+        or data.get("open_order_id")
+        or trade_order_id(order_id)
+    )
+    if not order_db.update_payment_status(
+        order_id,
+        "paid",
+        "xunhupay_wechat",
+        transaction_id,
+    ):
+        return Response("fail", status=500, mimetype="text/plain")
+
+    print(f"订单 #{order_id} 虎皮椒支付成功，交易号: {transaction_id}")
+    return Response("success", mimetype="text/plain")
+
+
 # 订单成功页面  22222
 @app.route('/order/success')
 def order_success():
@@ -241,6 +368,7 @@ def order_success():
         cups=cups,
         order=order,
         amount_yuan=(order['payment_amount'] / 100) if order else 0,
+        payment_method_label=payment_method_label(order.get('payment_method', '')) if order else '',
         current_time=current_time
     )
 
@@ -277,7 +405,7 @@ if __name__ == '__main__':
     app.run(
         host='0.0.0.0',
         port=5000,
-        debug=True
+        debug=os.getenv("FLASK_DEBUG", "false").lower() in ("1", "true", "yes", "on")
     )
 
 
