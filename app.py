@@ -8,7 +8,6 @@ from hupijiao_pay import (
     HupijiaoConfig,
     HupijiaoError,
     parse_trade_order_id,
-    trade_order_id,
     verify_sign,
     yuan_to_cents,
 )
@@ -335,7 +334,8 @@ def xunhupay_callback():
     transaction_id = (
         data.get("transaction_id")
         or data.get("open_order_id")
-        or trade_order_id(order_id)
+        or data.get("trade_order_id")
+        or str(order_id)
     )
     if not order_db.update_payment_status(
         order_id,

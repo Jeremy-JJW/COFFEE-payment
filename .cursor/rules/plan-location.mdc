@@ -1,0 +1,14 @@
+---
+description: Store project plan files inside this repository
+alwaysApply: true
+---
+
+# Plan File Location
+
+When creating or updating plan files for this project, store them under:
+
+```text
+.cursor/plans/
+```
+
+Do not store project plans only in the user-level Cursor plans directory. If a plan already exists outside the repository, copy or move it into `.cursor/plans/` so it stays with the COFFEE project.

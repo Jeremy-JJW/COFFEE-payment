@@ -37,9 +37,6 @@ class CoffeeProductionController:
         self.sequence_thread = None
         self.queue_monitor_thread = None
 
-        # 咖啡制作时间
-        self.coffee_processing_time = 80    #这个咖啡制作时间还要看一下原代吗是怎么定义使用的！！！！！！！！！！！！！！！！！！！！！！！！！
-
         # 线程锁
         self.lock = threading.Lock()
 
@@ -166,7 +163,7 @@ class CoffeeProductionController:
                         break
                     time.sleep(0.5)
                 else:
-                    return True   #当没有落下杯子，也就是超时100s还没有等到IN8信号，就直接跳出函数体，进行下一次制作
+                    return True
             time.sleep(3.5)
 
             # 6.触发落杯器下降   并再读一次IN8信号供下次判断使用，并OUT11置于低电平6s
@@ -247,14 +244,25 @@ class CoffeeProductionController:
             self.sequence_thread.join()
             #无限期阻塞调用这个线程的方法，这里是主线程（但是数据库或者订单监控线程仍然在运行！）。
             # 然后执行sequence_thread这个线程，直到这个线程执行完毕再运行主线程
-        #关闭硬件连接
-        self.io_controller.close()
-        self.coffee_machine.close()
+        # 关闭硬件连接
+        try:
+            self.io_controller.close_device()
+        except Exception as e:
+            logger.error(f"关闭岩獴板卡失败: {e}")
+            print(f"关闭岩獴板卡失败: {e}")
+
+        try:
+            self.coffee_machine.disconnect()
+        except Exception as e:
+            logger.error(f"关闭咖啡机串口失败: {e}")
+            print(f"关闭咖啡机串口失败: {e}")
 
         logger.info("控制器已安全停止")
+        print("控制器已安全停止，USB板卡和咖啡机串口已关闭")
 
 if __name__ == "__main__":
     COFFEE_PORT = "COM6"
+    controller = None
 
     try:
         logger.info("启动生产系统")
@@ -263,14 +271,17 @@ if __name__ == "__main__":
 
         start = controller.start()  #让 主线程运行起来
         if start:
-            try:
-                while controller.running:
-                    time.sleep(1)   #让主线程一直睡眠，但是还是存在。功能：1.提供用户中断机制
-            except Exception as e:
-                controller.stop()
+            while controller.running:
+                time.sleep(1)   #让主线程一直睡眠，但是还是存在。功能：1.提供用户中断机制
+    except KeyboardInterrupt:
+        logger.info("收到 Ctrl+C 停止信号，正在安全关闭设备")
+        print("收到 Ctrl+C 停止信号，正在安全关闭设备...")
     except Exception as e:
         logger.error(f"{e}")
         print("系统启动失败")
+    finally:
+        if controller:
+            controller.stop()
 
 
 # （0）看一下这杯结束生产后的流程

@@ -37,6 +37,8 @@ def load_local_env(filename=".env"):
 
 load_local_env()
 
+_last_trade_timestamp_ms = 0
+
 
 @dataclass
 class HupijiaoConfig:
@@ -112,13 +114,20 @@ def yuan_to_cents(yuan):
 
 
 def trade_order_id(order_id):
-    return f"coffee_{int(order_id)}"
+    global _last_trade_timestamp_ms
+    timestamp_ms = int(time.time() * 1000)
+    if timestamp_ms <= _last_trade_timestamp_ms:
+        timestamp_ms = _last_trade_timestamp_ms + 1
+    _last_trade_timestamp_ms = timestamp_ms
+    return f"coffee_{int(order_id)}_{timestamp_ms}"
 
 
 def parse_trade_order_id(value):
     raw = str(value or "")
     if raw.startswith("coffee_"):
-        raw = raw.split("_", 1)[1]
+        parts = raw.split("_")
+        if len(parts) >= 2:
+            raw = parts[1]
     return int(raw)
 
 

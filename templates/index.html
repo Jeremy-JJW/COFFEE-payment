@@ -198,79 +198,6 @@
             font-weight: 500;
         }
 
-        .making-orders-section {
-            margin: 0 20px 20px;
-            padding: 18px;
-            background: var(--cream);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--latte);
-        }
-
-        .making-orders-section h3 {
-            font-family: 'Outfit', 'Noto Sans SC', sans-serif;
-            color: var(--mocha);
-            margin-bottom: 14px;
-            text-align: center;
-            font-size: 1.05rem;
-            font-weight: 600;
-        }
-
-        .order-progress-item {
-            margin-bottom: 12px;
-            padding: 12px 14px;
-            background: #fff;
-            border-radius: 8px;
-            border: 1px solid var(--latte);
-            border-left: 4px solid var(--accent);
-            box-shadow: 0 2px 8px rgba(44, 24, 16, 0.04);
-        }
-
-        .order-progress-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .order-progress-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-            gap: 8px;
-        }
-
-        .order-progress-id {
-            font-weight: 700;
-            color: var(--ink);
-            font-size: 0.9rem;
-        }
-
-        .order-progress-count {
-            color: #6b5344;
-            font-size: 0.85rem;
-        }
-
-        .order-progress-pct {
-            text-align: center;
-            margin-top: 6px;
-            font-size: 0.75rem;
-            color: #7a6558;
-        }
-
-        .progress-bar-container {
-            background: #e8e0d6;
-            height: 10px;
-            border-radius: 999px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-
-        .progress-bar {
-            background: linear-gradient(90deg, #b8865c, var(--mocha));
-            height: 100%;
-            width: 0%;
-            transition: width 0.5s ease;
-            border-radius: 999px;
-        }
-
         .form-container {
             max-width: 450px;
             margin: 0 auto;
@@ -501,26 +428,6 @@
             </div>
         </div>
 
-        <!-- 制作中订单进度显示 -->
-        {% if making_orders %}
-        <div class="making-orders-section">
-            <h3>正在制作的订单</h3>
-
-            {% for order in making_orders %}
-            <div class="order-progress-item">
-                <div class="order-progress-head">
-                    <span class="order-progress-id">订单 #{{ order.order_id }}</span>
-                    <span class="order-progress-count">{{ order.completed_cups }}/{{ order.cups }} 杯</span>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar" data-progress-pct="{{ order.progress_percent }}"></div>
-                </div>
-                <div class="order-progress-pct">进度: {{ order.progress_percent }}%</div>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
         <!-- 订单表单部分 -->
         <div class="form-container">
             <h2 class="form-title">选择杯数</h2>
@@ -701,18 +608,7 @@
                 });
         }
 
-        function applyProgressBarWidths() {
-            document.querySelectorAll('.progress-bar[data-progress-pct]').forEach(function (el) {
-                var pct = el.getAttribute('data-progress-pct');
-                if (pct !== null && pct !== '') {
-                    el.style.width = pct + '%';
-                }
-            });
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
-            applyProgressBarWidths();
-
             cupOptionsRoot.addEventListener('click', function(event) {
                 if (isSubmitting) {
                     event.preventDefault();
