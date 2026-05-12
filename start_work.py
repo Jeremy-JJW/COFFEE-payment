@@ -90,20 +90,6 @@ def power_on_devices():
         logger.info("✅ 开机程序执行完成")
         logger.info("请在设备面板确认机械臂和咖啡机是否已成功启动")
 
-        # # 询问是否验证状态
-        # if input("是否验证开机信号状态? [y/n]: ").lower() == 'y':
-        #     arm_state = io_controller.read_output_pin(ARM_START_PIN)
-        #     coffee_state = io_controller.read_output_pin(COFFEE_PIN)
-        #
-        #     arm_ok = arm_state is True
-        #     coffee_ok = coffee_state is True
-        #
-        #     logger.info(f"机械臂开机信号状态: {'高电平(✅)' if arm_ok else '低电平(❌)'}")
-        #     logger.info(f"咖啡机开机信号状态: {'高电平(✅)' if coffee_ok else '低电平(❌)'}")
-        #
-        #     if not (arm_ok and coffee_ok):
-        #         logger.warning("⚠️ 信号状态未恢复! 请手动检查设备连接")
-
         # 安全关闭设备
         logger.info("关闭板卡连接...")
         io_controller.close_device()
