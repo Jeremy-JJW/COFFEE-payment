@@ -218,13 +218,6 @@
                 支付成功后，订单会自动进入咖啡制作队列。
             </p>
 
-            {% if pay_url %}
-            <p class="pay-tip">
-                如果二维码无法识别，可在手机上打开支付链接：<br>
-                <a href="{{ pay_url }}" target="_blank" rel="noopener">打开微信支付链接</a>
-            </p>
-            {% endif %}
-
             {% if simulated_payment_enabled %}
             <div class="dev-payment">
                 <p class="dev-payment-note">开发调试模式：模拟支付已开启，正式使用请关闭 ENABLE_SIMULATED_PAYMENT。</p>
@@ -259,7 +252,7 @@
             });
         }
 
-        statusText.textContent = {% if pay_url %}'正在等待微信支付结果...'{% else %}'二维码未生成，请检查支付配置后重新下单'{% endif %};
+        statusText.textContent = "{{ '正在等待微信支付结果...' if pay_url else '二维码未生成，请检查支付配置后重新下单' }}";
 
         function refreshPaymentStatus() {
             fetch('/api/payment/status/{{ order.order_id }}')

@@ -202,3 +202,32 @@
 2026-05-12 15:30:26 - Coffee Machine - INFO - 收到 Ctrl+C 停止信号，正在安全关闭设备
 2026-05-12 15:30:26 - coffee_machine - INFO - 已断开与咖啡机的连接
 2026-05-12 15:30:26 - Coffee Machine - INFO - 控制器已安全停止
+2026-05-12 15:33:59 - Coffee Machine - INFO - 启动生产系统
+2026-05-12 15:33:59 - coffee_machine - INFO - 成功连接到咖啡机，端口: COM6, 波特率: 38400
+2026-05-12 15:33:59 - Coffee Machine - INFO - DO信号复位完成，全部置为True
+2026-05-12 15:33:59 - Coffee Machine - INFO - start方法执行完毕，咖啡机/板卡连接成功，所有DO信号复位完成（置为True），已启动数据库监控线程/生产队列线程
+2026-05-12 15:36:44 - Coffee Machine - INFO - 已获得新订单，订单号为：10,该订单要做1杯咖啡
+2026-05-12 15:36:45 - Coffee Machine - INFO - 已进入queue_monitorif判断，开始创建一杯生产线程
+2026-05-12 15:36:45 - Coffee Machine - INFO - =====================一杯生产制作程序开始=============================
+2026-05-12 15:36:46 - Coffee Machine - INFO - 已触发机械臂启动信号DO1
+2026-05-12 15:36:56 - Coffee Machine - INFO - 机械臂到位信号IN11已变化，杯子到达咖啡机口
+2026-05-12 15:36:56 - coffee_machine - INFO - 发送命令: :01010002FC\r\n
+2026-05-12 15:36:56 - coffee_machine - WARNING - 未收到响应
+2026-05-12 15:36:56 - coffee_machine - ERROR - 发送咖啡制作指令失败
+2026-05-12 15:36:56 - Coffee Machine - INFO - 咖啡制作命令已发送
+2026-05-12 15:36:56 - Coffee Machine - INFO - 等待咖啡制作完毕并放到落杯器上
+2026-05-12 15:36:56 - Coffee Machine - INFO - 目前IN8信号电平为True,杯子未放到落杯器上
+2026-05-12 15:38:13 - Coffee Machine - INFO - 杯子已落到落杯器上，3.5秒等待下降
+2026-05-12 15:38:16 - Coffee Machine - INFO - 开始触发OUT11信号，让落杯器下降
+2026-05-12 15:38:16 - Coffee Machine - INFO - 目前IN8信号电平为False，杯子在落杯器上
+2026-05-12 15:38:22 - Coffee Machine - INFO - OUT11信号已恢复为True
+2026-05-12 15:38:57 - Coffee Machine - INFO - IN8信号已变化，初步判断用户已取走杯子
+2026-05-12 15:39:00 - Coffee Machine - INFO - 第2次判断，用户确实取走了杯子
+2026-05-12 15:39:00 - Coffee Machine - INFO - 正在升起起落架
+2026-05-12 15:39:06 - Coffee Machine - INFO - 起落架已升起，OUT12信号恢复至True
+2026-05-12 15:39:06 - Coffee Machine - INFO - 已进入线程锁，开始修改订单状态
+2026-05-12 15:39:06 - Coffee Machine - INFO - 本次订单剩余杯数为0
+2026-05-12 15:39:06 - Coffee Machine - INFO - 数据库已修改，参数回到初始化，本次订单已完成
+2026-05-12 15:40:01 - Coffee Machine - INFO - 收到 Ctrl+C 停止信号，正在安全关闭设备
+2026-05-12 15:40:01 - coffee_machine - INFO - 已断开与咖啡机的连接
+2026-05-12 15:40:01 - Coffee Machine - INFO - 控制器已安全停止
