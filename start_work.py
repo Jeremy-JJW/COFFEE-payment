@@ -30,11 +30,6 @@ def power_on_devices():
     print("警告: 只有设备完全断电后才需要执行此程序")
     print("=" * 68)
 
-    # 确认是否继续
-    confirm = input("是否继续执行开机程序? [y/n]: ").lower()
-    if confirm != 'y':
-        logger.info("用户取消开机程序")
-        return
 
     # 创建IO控制器
     io_controller = YanMengIOController()
