@@ -1,11 +1,7 @@
 # Cursor_coffee
 这个是cursor中开发coffee项目的github备份库
 
-需要的硬件
-
-    1.落杯器感应器
-    
-    2.触摸屏
+**项目介绍见 CLAUDE.md**
 
 已改的程序
 
